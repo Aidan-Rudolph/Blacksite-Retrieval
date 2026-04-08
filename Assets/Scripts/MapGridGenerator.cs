@@ -29,6 +29,8 @@ public class MapGridGenerator : MonoBehaviour
         randomWalker();
 
         testSpawn();
+
+        Debug.Log("Walker Finished");
     }
 
     void fillGridSolid()
