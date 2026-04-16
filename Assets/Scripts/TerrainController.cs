@@ -6,6 +6,8 @@ public class TerrainController : MonoBehaviour {
     public int sub = 16;
     public float chunkSize = 4;
     public Material mat;
+    public float updates_per_second = 10;
+    private float timer = 0;
 
     class TerrainChunk {
         public Mesh mesh;
@@ -19,6 +21,7 @@ public class TerrainController : MonoBehaviour {
     }
 
     private List<TerrainChunk> chunks = new List<TerrainChunk>();
+    private HashSet<TerrainChunk> toUpdate = new HashSet<TerrainChunk>();
 
     void Start() {
         int numX = Mathf.CeilToInt(transform.localScale.x / chunkSize);
@@ -101,37 +104,42 @@ public class TerrainController : MonoBehaviour {
     }
 
     void Update() {
-        if (Input.GetKeyDown(KeyCode.Space)) {
+        timer += Time.deltaTime;
+        if (timer*updates_per_second >= 1) {
+            timer = 0;
+            foreach (TerrainChunk chunk in toUpdate) {
+                UpdateChunk(chunk);
+            }
+            toUpdate.Clear();
+        }
+        if (Input.GetKey(KeyCode.Space)) {
             RaycastHit hit;
             if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit)) {
                 TerrainChunk chunk = chunks.Find(c => c.obj == hit.collider.gameObject);
                 if (chunk != null) {
-                    Dig(chunk, hit.point, Vector3.down/transform.localScale.y);
+                    foreach (TerrainChunk c in chunks)
+                        Dig(c, hit.point, Camera.main.transform.position, 10 * Time.deltaTime);
                 }
             }
         }
     }
 
-    void Dig(TerrainChunk chunk, Vector3 center, Vector3 offset, float radius = 0.5f, float strength = 1f, bool recur = true) {
+    void Dig(TerrainChunk chunk, Vector3 center, Vector3 offset, float strength = 1f) {
+        bool changed = false;
+        float radius = strength * 2;
         for (int i = 0; i < chunk.vertices.Count; i++) {
             float dist = Vector3.Distance(chunk.obj.transform.TransformPoint(chunk.vertices[i]), center);
             if (dist > radius) continue;
+            changed = true;
+            Vector3 apex = center + ((center - offset).normalized * strength);
+            Vector3 move = chunk.obj.transform.InverseTransformPoint(apex) - chunk.obj.transform.InverseTransformPoint(center);
             float falloff = 1f - (dist / radius);
             falloff = falloff * falloff;
-            chunk.vertices[i] += offset * falloff * strength;
+            chunk.vertices[i] += move * falloff;
         }
-        calc_uv(chunk);
-        UpdateChunk(chunk);
-        if (!recur) return;
-
-        int numX = (int)(transform.localScale.x / chunkSize);
-        for (int xi = -1; xi <= 1; ++xi) {
-            for (int zi = -1; zi <= 1; ++zi) {
-                if (xi == 0 && zi == 0) continue;
-                int x = xi + chunk.x_i;
-                int z = zi + chunk.z_i;
-                Dig(chunks[x+(z*numX)], center, offset, radius, strength, false);
-            }
+        if (changed) {
+            calc_uv(chunk);
+            toUpdate.Add(chunk);
         }
     }
 
