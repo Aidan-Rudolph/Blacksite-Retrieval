@@ -180,16 +180,14 @@ public abstract class MonsterBase : MonoBehaviour
         lastAttackTime = Time.time;
         anim.SetBool(AnimAttack, true);
 
-        // MULTIPLAYER: this should be an RPC so all clients apply damage
-        // NOTE: if you are using the MonsterHitbox script on the weapon object,
-        // damage is handled there instead — you can remove the lines below
-        PlayerHealth ph = player.GetComponent<PlayerHealth>();
-        if (ph != null) ph.TakeDamage(attackDamage);
+        MonsterAttackHitbox[] hitboxes = GetComponentsInChildren<MonsterAttackHitbox>();
+        foreach (var hb in hitboxes)
+        {
+            hb.EnableHitbox();
+        }
     }
 
     //  Damage / Death 
-
-    /// <summary>Call this to deal damage to the monster.</summary>
     public void TakeDamage(float amount)
     {
         if (IsDead) return;
