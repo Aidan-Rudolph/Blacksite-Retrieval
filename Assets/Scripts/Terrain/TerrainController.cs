@@ -5,16 +5,22 @@ using UnityEngine;
 public class TerrainController : MonoBehaviour {
     public int sub = 1;
     public float chunkSize = 1;
-    public float[] voxel;
     public Material mat;
     public float updates_per_second = 10;
     public string terrainLayer;
+    public float threshold = 0.5f;
+
+    [HideInInspector]
+    public float[] voxel;
+
     private float timer = 0;
     int numX;
     int numY;
     int numZ;
     int sizeX, sizeY, sizeZ;
     int strideZ, strideY;
+
+    private MapGridGenerator mgg;
 
     public class TerrainChunk {
         public Mesh mesh;
@@ -33,6 +39,10 @@ public class TerrainController : MonoBehaviour {
     private HashSet<TerrainChunk> toUpdate = new HashSet<TerrainChunk>();
 
     void Start() {
+        mgg = GetComponent<MapGridGenerator>();
+        if (mgg == null || !mgg.run()) {
+            mgg = null;
+        }
         gameObject.layer = LayerMask.NameToLayer(terrainLayer);
         numX = Mathf.CeilToInt(transform.localScale.x / chunkSize);
         numY = Mathf.CeilToInt(transform.localScale.y / chunkSize);
@@ -89,8 +99,17 @@ public class TerrainController : MonoBehaviour {
                 }
             }
         }
-        for (int i = 0; i < voxel.Length; ++i) {
-            voxel[i] = (sizeY / 2f) - i/(strideY);
+        int[,,] map = mgg.GetMap();
+        for (int y = 0; y < sizeY; y++) {
+            for (int z = 0; z < sizeZ; z++) {
+                for (int x = 0; x < sizeX; x++) {
+                    int i = x + z * strideZ + y * strideY;
+                    int mx = Mathf.Clamp(x-5, 0, map.GetLength(0) - 1);
+                    int my = Mathf.Clamp(y-5, 0, map.GetLength(1) - 1);
+                    int mz = Mathf.Clamp(z-5, 0, map.GetLength(2) - 1);
+                    voxel[i] = (map[mx, my, mz] == 1 && y/sub < transform.localScale.y-transform.position.y) ? 10 : -10;
+                }
+            }
         }
         foreach (TerrainChunk chunk in chunks) {
             UpdateChunkData(chunk);
@@ -146,34 +165,38 @@ public class TerrainController : MonoBehaviour {
         };
 
         byte cubeIndex = 0;
-        cubeIndex |= values[0] < 0.5f ? (byte)0x01 : (byte)0x00;
-        cubeIndex |= values[1] < 0.5f ? (byte)0x02 : (byte)0x00;
-        cubeIndex |= values[2] < 0.5f ? (byte)0x04 : (byte)0x00;
-        cubeIndex |= values[3] < 0.5f ? (byte)0x08 : (byte)0x00;
-        cubeIndex |= values[4] < 0.5f ? (byte)0x10 : (byte)0x00;
-        cubeIndex |= values[5] < 0.5f ? (byte)0x20 : (byte)0x00;
-        cubeIndex |= values[6] < 0.5f ? (byte)0x40 : (byte)0x00;
-        cubeIndex |= values[7] < 0.5f ? (byte)0x80 : (byte)0x00;
+        cubeIndex |= values[0] < threshold ? (byte)0x01 : (byte)0x00;
+        cubeIndex |= values[1] < threshold ? (byte)0x02 : (byte)0x00;
+        cubeIndex |= values[2] < threshold ? (byte)0x04 : (byte)0x00;
+        cubeIndex |= values[3] < threshold ? (byte)0x08 : (byte)0x00;
+        cubeIndex |= values[4] < threshold ? (byte)0x10 : (byte)0x00;
+        cubeIndex |= values[5] < threshold ? (byte)0x20 : (byte)0x00;
+        cubeIndex |= values[6] < threshold ? (byte)0x40 : (byte)0x00;
+        cubeIndex |= values[7] < threshold ? (byte)0x80 : (byte)0x00;
 
         if (cubeIndex == 0 || cubeIndex == 0xFF) return;
         Vector3[] vertList = new Vector3[12];
-        if ((Tables.edgeTable[cubeIndex] & 1) != 0) { vertList[0] = Interpolate(points[0], points[1], values[0], values[1], 0.5f); }
-        if ((Tables.edgeTable[cubeIndex] & 2) != 0) { vertList[1] = Interpolate(points[1], points[2], values[1], values[2], 0.5f); }
-        if ((Tables.edgeTable[cubeIndex] & 4) != 0) { vertList[2] = Interpolate(points[2], points[3], values[2], values[3], 0.5f); }
-        if ((Tables.edgeTable[cubeIndex] & 8) != 0) { vertList[3] = Interpolate(points[3], points[0], values[3], values[0], 0.5f); }
-        if ((Tables.edgeTable[cubeIndex] & 16) != 0) { vertList[4] = Interpolate(points[4], points[5], values[4], values[5], 0.5f); }
-        if ((Tables.edgeTable[cubeIndex] & 32) != 0) { vertList[5] = Interpolate(points[5], points[6], values[5], values[6], 0.5f); }
-        if ((Tables.edgeTable[cubeIndex] & 64) != 0) { vertList[6] = Interpolate(points[6], points[7], values[6], values[7], 0.5f); }
-        if ((Tables.edgeTable[cubeIndex] & 128) != 0) { vertList[7] = Interpolate(points[7], points[4], values[7], values[4], 0.5f); }
-        if ((Tables.edgeTable[cubeIndex] & 256) != 0) { vertList[8] = Interpolate(points[0], points[4], values[0], values[4], 0.5f); }
-        if ((Tables.edgeTable[cubeIndex] & 512) != 0) { vertList[9] = Interpolate(points[1], points[5], values[1], values[5], 0.5f); }
-        if ((Tables.edgeTable[cubeIndex] & 1024) != 0) { vertList[10] = Interpolate(points[2], points[6], values[2], values[6], 0.5f); }
-        if ((Tables.edgeTable[cubeIndex] & 2048) != 0) { vertList[11] = Interpolate(points[3], points[7], values[3], values[7], 0.5f); }
+        if ((Tables.edgeTable[cubeIndex] & 1) != 0) { vertList[0] = Interpolate(points[0], points[1], values[0], values[1], threshold); }
+        if ((Tables.edgeTable[cubeIndex] & 2) != 0) { vertList[1] = Interpolate(points[1], points[2], values[1], values[2], threshold); }
+        if ((Tables.edgeTable[cubeIndex] & 4) != 0) { vertList[2] = Interpolate(points[2], points[3], values[2], values[3], threshold); }
+        if ((Tables.edgeTable[cubeIndex] & 8) != 0) { vertList[3] = Interpolate(points[3], points[0], values[3], values[0], threshold); }
+        if ((Tables.edgeTable[cubeIndex] & 16) != 0) { vertList[4] = Interpolate(points[4], points[5], values[4], values[5], threshold); }
+        if ((Tables.edgeTable[cubeIndex] & 32) != 0) { vertList[5] = Interpolate(points[5], points[6], values[5], values[6], threshold); }
+        if ((Tables.edgeTable[cubeIndex] & 64) != 0) { vertList[6] = Interpolate(points[6], points[7], values[6], values[7], threshold); }
+        if ((Tables.edgeTable[cubeIndex] & 128) != 0) { vertList[7] = Interpolate(points[7], points[4], values[7], values[4], threshold); }
+        if ((Tables.edgeTable[cubeIndex] & 256) != 0) { vertList[8] = Interpolate(points[0], points[4], values[0], values[4], threshold); }
+        if ((Tables.edgeTable[cubeIndex] & 512) != 0) { vertList[9] = Interpolate(points[1], points[5], values[1], values[5], threshold); }
+        if ((Tables.edgeTable[cubeIndex] & 1024) != 0) { vertList[10] = Interpolate(points[2], points[6], values[2], values[6], threshold); }
+        if ((Tables.edgeTable[cubeIndex] & 2048) != 0) { vertList[11] = Interpolate(points[3], points[7], values[3], values[7], threshold); }
 
         for (int i = 0; Tables.triangleTable[cubeIndex, i] != -1; i += 3) {
-            tris.Add(vertList[Tables.triangleTable[cubeIndex, i + 2]]);
-            tris.Add(vertList[Tables.triangleTable[cubeIndex, i + 1]]);
-            tris.Add(vertList[Tables.triangleTable[cubeIndex, i + 0]]);
+            Vector3 a = vertList[Tables.triangleTable[cubeIndex, i + 2]];
+            Vector3 b = vertList[Tables.triangleTable[cubeIndex, i + 1]];
+            Vector3 c = vertList[Tables.triangleTable[cubeIndex, i + 0]];
+            if (a == b || b == c || a == c) continue;
+            tris.Add(a);
+            tris.Add(b);
+            tris.Add(c);
         }
     }
 
@@ -283,7 +306,7 @@ public class TerrainController : MonoBehaviour {
                     falloff = falloff * falloff * strength;
 
                     int i = x + z * strideZ + y * strideY;
-                    voxel[i] += falloff;
+                    voxel[i] = Mathf.Clamp(falloff+voxel[i], -10, 10);
 
                     int chunkX = x / (int)(sub * chunkSize);
                     int chunkY = y / (int)(sub * chunkSize);

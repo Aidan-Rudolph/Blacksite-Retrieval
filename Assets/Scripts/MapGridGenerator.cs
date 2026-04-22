@@ -6,6 +6,7 @@ using UnityEngine;
 public class MapGridGenerator : MonoBehaviour
 {
     public GameObject testTerrain;
+    public bool testing = false;
 
     [Header("Grid Dimensions")]
     public int sizeX = 100;
@@ -18,19 +19,35 @@ public class MapGridGenerator : MonoBehaviour
     public int carveSpeed = 3;      // How many movement steps before carving occurs
 
     // Internal storage for the map
-    private int[,,] map; // 1 = solid, 0 = empty
+    private int[,,] map = null; // 1 = solid, 0 = empty
 
     // Start is called before the first frame update
+    public int[,,] GetMap() {
+        return map;
+    }
+
     void Start()
     {
-        map = new int[sizeX, sizeY, sizeZ];
+        if (!testing || !init()) return;
         fillGridSolid();
-
         randomWalker();
-
         testSpawn();
+    }
 
-        Debug.Log("Walker Finished");
+    bool init() {
+        if (map != null) return false;
+        map = new int[sizeX, sizeY, sizeZ];
+        return true;
+    }
+
+    public bool run() {
+        if (init()) {
+            fillGridSolid();
+            randomWalker();
+            if (testing) testSpawn();
+            return true;
+        }
+        return false;
     }
 
     void fillGridSolid()
@@ -49,7 +66,7 @@ public class MapGridGenerator : MonoBehaviour
 
     void randomWalker()
     {
-        Vector3Int pos = new Vector3Int(sizeX / 2, sizeY / 2, 0); // Start in the center
+        Vector3Int pos = new Vector3Int(sizeX / 2, sizeY / 2, sizeZ / 2); // Start in the center
 
         for (int step = 0; step < maxSteps; step++)
         {
@@ -140,9 +157,9 @@ public class MapGridGenerator : MonoBehaviour
             {
                 for (int z = 0; z < sizeZ; z++)
                 {
-                    if (map[x, y, z] == 1)
+                    if (map[x, y, z] == 0)
                     {
-                        Instantiate(testTerrain, new Vector3(x, y, z), Quaternion.identity);
+                        Instantiate(testTerrain, new Vector3(-x, y, -z) + transform.localScale*0.5f + transform.position, Quaternion.identity);
                     }
                 }
             }

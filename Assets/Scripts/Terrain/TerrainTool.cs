@@ -7,16 +7,12 @@ public class TerrainTool : MonoBehaviour {
     public float strength = 0.25f;
     public float radius = 2;
 
-    public void Use(Ray ray, float dir) {
+    public void Use(Ray ray, float dir, float max_dist) {
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit)) {
-            TerrainController.TerrainChunk chunk = terrain.chunks.Find(c => c.obj == hit.collider.gameObject);
-            if (chunk == null) return;
-            foreach (Collider col in Physics.OverlapSphere(hit.point, radius+terrain.chunkSize, LayerMask.GetMask(terrain.terrainLayer))) {
-                TerrainController.TerrainChunk c = terrain.chunks.Find(c => c.obj == col.gameObject);
-                if (c != null)
-                    terrain.Dig(hit.point, strength * dir, radius);
-            }
+            TerrainController t_hit = hit.collider.transform.parent.GetComponent<TerrainController>();
+            if (t_hit == null || t_hit != terrain || Vector3.Distance(hit.point, ray.origin) > max_dist) return;
+            terrain.Dig(hit.point, strength * dir, radius);
         }
     }
 }

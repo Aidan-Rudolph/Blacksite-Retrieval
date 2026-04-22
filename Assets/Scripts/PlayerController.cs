@@ -38,7 +38,7 @@ public class PlayerController : MonoBehaviour {
         if (tt) {
             float dir = ((Input.GetKey(KeyCode.Q) ? -1 : 0) + (Input.GetKey(KeyCode.E) ? 1 : 0));
             if (dir != 0)
-                tt.Use(new Ray(Camera.main.transform.position, Camera.main.transform.forward), dir*Time.deltaTime);
+                tt.Use(new Ray(Camera.main.transform.position, Camera.main.transform.forward), dir*Time.deltaTime, 10);
         }
         rb.velocity += (Input.GetAxis("Horizontal")*transform.right + Input.GetAxis("Vertical")*transform.forward).normalized*speed;
         transform.Rotate(Input.GetAxis("Mouse X")*sens*Time.deltaTime * Vector3.up);

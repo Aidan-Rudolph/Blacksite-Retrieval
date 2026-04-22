@@ -76,11 +76,20 @@ namespace UnityStandardAssets.Characters.FirstPerson
             public float shellOffset; //reduce the radius by that ratio to avoid getting stuck in wall (a value of 0.1f is nice)
         }
 
+        [Serializable]
+        public class TerrainToolSettings {
+            public KeyCode pull;
+            public KeyCode push;
+            public float near = 0.5f;
+            public float far = 5f;
+        }
+
 
         public Camera cam;
         public MovementSettings movementSettings = new MovementSettings();
         public MouseLook mouseLook = new MouseLook();
         public AdvancedSettings advancedSettings = new AdvancedSettings();
+        public TerrainToolSettings terrainToolSettings = new TerrainToolSettings();
 
 
         private Rigidbody m_RigidBody;
@@ -133,6 +142,16 @@ namespace UnityStandardAssets.Characters.FirstPerson
             if (CrossPlatformInputManager.GetButtonDown("Jump") && !m_Jump)
             {
                 m_Jump = true;
+            }
+
+            float dir = Input.GetKey(terrainToolSettings.push) ? 1 : 0;
+            dir -= Input.GetKey(terrainToolSettings.pull) ? 1 : 0;
+            if (dir != 0) {
+                GetComponent<TerrainTool>()?.Use(
+                    new Ray(Camera.main.transform.position + (terrainToolSettings.near * Camera.main.transform.forward), Camera.main.transform.forward),
+                    dir*Time.deltaTime,
+                    terrainToolSettings.far - terrainToolSettings.near
+                );
             }
         }
 
@@ -211,7 +230,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private Vector2 GetInput()
         {
-            
+
             Vector2 input = new Vector2
                 {
                     x = CrossPlatformInputManager.GetAxis("Horizontal"),
