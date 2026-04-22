@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour {
     private Camera cam;
     private Rigidbody rb;
+    private TerrainTool tt;
     private float camRot = 0;
     public float speed = 5;
     public float sens = 500;
@@ -17,6 +18,7 @@ public class PlayerController : MonoBehaviour {
         rb = GetComponent<Rigidbody>();
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        tt = GetComponent<TerrainTool>();
     }
 
     void Update() {
@@ -32,6 +34,11 @@ public class PlayerController : MonoBehaviour {
                 Cursor.visible = false;
             }
             else return;
+        }
+        if (tt) {
+            float dir = ((Input.GetKey(KeyCode.Q) ? -1 : 0) + (Input.GetKey(KeyCode.E) ? 1 : 0));
+            if (dir != 0)
+                tt.Use(new Ray(Camera.main.transform.position, Camera.main.transform.forward), dir*Time.deltaTime);
         }
         rb.velocity += (Input.GetAxis("Horizontal")*transform.right + Input.GetAxis("Vertical")*transform.forward).normalized*speed;
         transform.Rotate(Input.GetAxis("Mouse X")*sens*Time.deltaTime * Vector3.up);
