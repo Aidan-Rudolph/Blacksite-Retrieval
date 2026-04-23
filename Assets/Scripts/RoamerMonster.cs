@@ -45,10 +45,13 @@ public class RoamerMonster : MonsterBase
     // Called once when this monster dies (only if canDie = true)
     protected override void OnDeath()
     {
-        PlaySound(attackSound); // swap for a death-specific sound if you have one
 
-        // Example: spawn a loot pickup, trigger a door, etc.
-        // Destroy(gameObject, 3f);
+        Destroy(gameObject, 3f);
+    }
+
+    protected override void OnAttack()
+    {
+        PlaySound(attackSound);
     }
 
     // Helpers 

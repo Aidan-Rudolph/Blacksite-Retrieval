@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 // Base class for all monsters.
 // - Detects the player by proximity (enter range vs exit range are separate)
@@ -37,6 +38,12 @@ public abstract class MonsterBase : MonoBehaviour
     [Tooltip("Seconds between attacks.")]
     public float attackCooldown = 1.2f;
 
+    [Tooltip("How long the attack animation plays before returning to idle. Match this to your animation clip length.")]
+    public float attackAnimationDuration = 1f;
+
+    [Tooltip("Delay in seconds before the attack sound plays, to match the animation.")]
+    public float attackSoundDelay = 0f;
+
     [Tooltip("Damage dealt per attack.")]
     public float attackDamage = 25f;
 
@@ -66,7 +73,7 @@ public abstract class MonsterBase : MonoBehaviour
     private static readonly int AnimDead = Animator.StringToHash("Dead");
     private static readonly int AnimHit = Animator.StringToHash("Hit");
 
-
+    private bool isAttacking = false;
 
     protected virtual void Awake()
     {
@@ -125,6 +132,7 @@ public abstract class MonsterBase : MonoBehaviour
     {
         if (IsDead) return;
         if (player == null) return;
+        if (isAttacking) return;
 
         float distToPlayer = Vector3.Distance(transform.position, player.position);
 
@@ -178,7 +186,7 @@ public abstract class MonsterBase : MonoBehaviour
         if (Time.time - lastAttackTime < attackCooldown) return;
 
         lastAttackTime = Time.time;
-        anim.SetBool(AnimAttack, true);
+        StartCoroutine(AttackCoroutine());
 
         MonsterAttackHitbox[] hitboxes = GetComponentsInChildren<MonsterAttackHitbox>();
         foreach (var hb in hitboxes)
@@ -225,12 +233,24 @@ public abstract class MonsterBase : MonoBehaviour
         OnDeath();
     }
 
+    private IEnumerator AttackCoroutine()
+    {
+        isAttacking = true;
+        anim.SetBool(AnimAttack, true);
+        yield return new WaitForSeconds(attackSoundDelay);
+        OnAttack();
+        yield return new WaitForSeconds(Mathf.Max(0.5f, attackAnimationDuration - attackSoundDelay));
+        anim.SetBool(AnimAttack, false);
+        isAttacking = false;
+    }
+
     // Overridable hooks for subclasses 
 
     protected virtual void OnMonsterUpdate() { }
     protected virtual void OnAggroed() { }
     protected virtual void OnDeaggroed() { }
     protected virtual void OnDeath() { }
+    protected virtual void OnAttack() { }
 
     // Helpers 
 
