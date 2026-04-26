@@ -199,8 +199,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 8278768049224127090}
   - {fileID: 2380002830894851618}
@@ -268,9 +268,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04d584fbda75dd54c904d5fdd7cea0a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: Item
-  itemValue: 10
-  itemWeight: 1
+  itemName: Army Crate
+  itemValue: 35
+  itemWeight: 15
   pickupRange: 2.5
   destroyOnReturn: 1
   pickupSound: {fileID: 8300000, guid: 6864b0a70ffb9904d8ca6827081d7677, type: 3}
@@ -283,7 +283,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5555432806178740942}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 40
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}

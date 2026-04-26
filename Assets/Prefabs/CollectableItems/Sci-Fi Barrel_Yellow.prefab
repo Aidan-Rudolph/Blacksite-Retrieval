@@ -110,9 +110,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04d584fbda75dd54c904d5fdd7cea0a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: Item
-  itemValue: 10
-  itemWeight: 1
+  itemName: Yellow Energy Cell
+  itemValue: 15
+  itemWeight: 4
   pickupRange: 2.5
   destroyOnReturn: 1
   pickupSound: {fileID: 8300000, guid: ea206982fc114ad49aee53305d0be838, type: 3}
@@ -125,7 +125,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7846650305907288761}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 30
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}

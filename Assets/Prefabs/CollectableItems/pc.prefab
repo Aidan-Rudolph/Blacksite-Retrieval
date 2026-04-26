@@ -118,9 +118,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04d584fbda75dd54c904d5fdd7cea0a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: Item
-  itemValue: 10
-  itemWeight: 1
+  itemName: Computer
+  itemValue: 23
+  itemWeight: 6
   pickupRange: 2.5
   destroyOnReturn: 1
   pickupSound: {fileID: 8300000, guid: 209cc0572c3d6524f9e7ef9f32dc4691, type: 3}
@@ -133,7 +133,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4463097085177740130}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 40
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}

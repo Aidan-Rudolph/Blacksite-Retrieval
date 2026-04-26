@@ -22,7 +22,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3a4bfd3a862bc844983928629de24869, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3a4bfd3a862bc844983928629de24869, type: 3}
       propertyPath: m_LocalPosition.y
@@ -106,9 +106,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04d584fbda75dd54c904d5fdd7cea0a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: Item
-  itemValue: 10
-  itemWeight: 1
+  itemName: Axe
+  itemValue: 7
+  itemWeight: 3
   pickupRange: 2.5
   destroyOnReturn: 1
   pickupSound: {fileID: 8300000, guid: ea206982fc114ad49aee53305d0be838, type: 3}
@@ -121,7 +121,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8096676838593341424}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 30
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
