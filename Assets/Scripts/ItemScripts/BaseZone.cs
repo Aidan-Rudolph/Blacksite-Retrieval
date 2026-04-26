@@ -22,9 +22,29 @@ public class BaseZone : MonoBehaviour
         if (!other.CompareTag("Player")) return;
 
         PlayerInventory inventory = other.GetComponent<PlayerInventory>();
-        if (inventory == null) return;
+        if (inventory != null)
+        {
+            CollectItems(inventory);
+        }
 
-        CollectItems(inventory);
+        //Start recharging flashlights
+        FlashlightItem flashlight = other.GetComponentInChildren<FlashlightItem>();
+        if (flashlight != null)
+        {
+            flashlight.StartCharging();
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.CompareTag("Player")) return;
+
+        // Stop recharging when the player leaves
+        FlashlightItem flashlight = other.GetComponentInChildren<FlashlightItem>();
+        if (flashlight != null)
+        {
+            flashlight.StopCharging();
+        }
     }
 
     private void CollectItems(PlayerInventory inventory)

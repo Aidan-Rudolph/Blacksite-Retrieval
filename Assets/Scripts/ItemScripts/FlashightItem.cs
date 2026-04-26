@@ -3,7 +3,7 @@ using UnityEngine;
 // A flashlight the player can pick up, toggle on/off, and recharge at base.
 // Requires a Light component on this GameObject or a child object.
 
-public class FlashlightItem : ItemBase
+public class FlashlightItem : MonoBehaviour
 {
     [Header("Flashlight Settings")]
     [Tooltip("Maximum battery life in seconds.")]
@@ -18,8 +18,7 @@ public class FlashlightItem : ItemBase
     [Tooltip("Key to toggle the flashlight on/off while held.")]
     public KeyCode toggleKey = KeyCode.F;
 
-    // runnint states
-
+    // running states
     public float CurrentBattery { get; private set; }
     public bool IsOn { get; private set; }
     public bool IsRecharging { get; private set; }
@@ -30,13 +29,11 @@ public class FlashlightItem : ItemBase
     private AudioSource audioSource;
 
     [Header("Optional Audio")]
-    public AudioClip toggleOnSound;
-    public AudioClip toggleOffSound;
+    public AudioClip toggleSound;
     public AudioClip batteryDeadSound;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
         CurrentBattery = maxBattery;
         audioSource = GetComponent<AudioSource>();
 
@@ -46,23 +43,21 @@ public class FlashlightItem : ItemBase
             Debug.LogWarning($"[FlashlightItem] No Light component found on {gameObject.name} or its children.");
 
         SetLight(false);
+
+        FlashlightUI.SetVisible(true);
+        FlashlightUI.SetBattery(1f);
     }
 
-    protected override void Update()
+    private void Update()
     {
-        base.Update(); // keep ItemBase proximity + pickup logic running
+        // only local player should be able to toggle in multiplayer
+        if (Input.GetKeyDown(toggleKey)) Toggle();
 
         if (IsRecharging)
         {
             Recharge();
             return;
         }
-
-        if (!IsPickedUp) return;
-
-        // Toggle on/off
-        // only local player should be able to toggle in multiplayer
-        if (Input.GetKeyDown(toggleKey)) Toggle();
 
         // Drain battery while on
         if (IsOn)
@@ -78,6 +73,20 @@ public class FlashlightItem : ItemBase
     }
 
     // Flashlight logic 
+    // Called when enter base
+    public void StartCharging()
+    {
+        IsRecharging = true;
+        IsOn = false;
+        SetLight(false);
+    }
+
+    // called when exit base
+    public void StopCharging()
+    {
+        IsRecharging = false;
+    }
+
 
     private void Toggle()
     {
@@ -86,8 +95,7 @@ public class FlashlightItem : ItemBase
         IsOn = !IsOn;
         SetLight(IsOn);
 
-        if (IsOn) PlaySound(toggleOnSound);
-        else PlaySound(toggleOffSound);
+        PlaySound(toggleSound);
     }
 
     private void SetLight(bool state)
@@ -117,46 +125,7 @@ public class FlashlightItem : ItemBase
         FlashlightUI.SetBattery(CurrentBattery / maxBattery);
     }
 
-    // ItemBase overrides 
-
-    protected override void OnPlayerEnterRange()
-    {
-        ItemPromptUI.Show($"Press E to pick up Flashlight  [{itemWeight}kg]");
-    }
-
-    protected override void OnPlayerExitRange()
-    {
-        ItemPromptUI.Hide();
-    }
-
-    protected override void OnPickedUp()
-    {
-        ItemPromptUI.Hide();
-        FlashlightUI.SetVisible(true);
-        FlashlightUI.SetBattery(CurrentBattery / maxBattery);
-    }
-
-    protected override void OnDropped()
-    {
-        SetLight(false);
-        IsOn = false;
-        FlashlightUI.SetVisible(false);
-    }
-
-    public override void OnReturnedToBase()
-    {
-        // Start recharging — BaseZone calls this
-        // sync recharge state in multiplayer so it shows for all players
-        IsRecharging = true;
-        IsOn = false;
-        SetLight(false);
-
-        // Detach from player so it sits at base while charging
-        transform.SetParent(null);
-    }
-
     // Sound helper
-
     private void PlaySound(AudioClip clip)
     {
         if (audioSource != null && clip != null)

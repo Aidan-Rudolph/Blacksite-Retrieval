@@ -29,6 +29,7 @@ public abstract class ItemBase : MonoBehaviour
     protected Transform playerTransform;
     private Collider itemCollider;
     private Rigidbody itemRigidbody;
+    private ItemManager itemManager;
 
 
     protected virtual void Awake()
@@ -39,9 +40,14 @@ public abstract class ItemBase : MonoBehaviour
         // replace with multiplayer player reference
         GameObject player = GameObject.FindWithTag("Player");
         if (player != null)
+        {
             playerTransform = player.transform;
+            itemManager = player.GetComponent<ItemManager>();
+        }
         else
+        {
             Debug.LogWarning($"[{itemName}] No GameObject tagged 'Player' found.");
+        }
     }
 
     protected virtual void Update()
@@ -54,15 +60,8 @@ public abstract class ItemBase : MonoBehaviour
         IsInRange = dist <= pickupRange;
 
         // event triggers for entering/exiting range
-        if (IsInRange && !wasInRange) OnPlayerEnterRange();
-        if (!IsInRange && wasInRange) OnPlayerExitRange();
-
-        // Check for pickup input while in range
-        // multiplayer make sure only the local player can trigger this
-        if (IsInRange && Input.GetKeyDown(KeyCode.E))
-        {
-            TryPickup();
-        }
+        if (IsInRange && !wasInRange) itemManager?.RegisterItem(this);
+        if (!IsInRange && wasInRange) itemManager?.UnregisterItem(this);
     }
 
     // Pickup / Drop 
@@ -87,11 +86,30 @@ public abstract class ItemBase : MonoBehaviour
         Pickup(playerTransform);
     }
 
-    // Called when the item is successfully picked up
+    public void TryPickupFromManager()
+    {
+        PlayerInventory inventory = playerTransform.GetComponent<PlayerInventory>();
+        if (inventory == null) return;
 
+        if (!inventory.CanPickup(this))
+        {
+            OnPickupFailed();
+            return;
+        }
+
+        inventory.AddItem(this);
+        itemManager?.UnregisterItem(this);
+        Pickup(playerTransform);
+    }
+
+    public void ShowPrompt() => OnPlayerEnterRange();
+    public void HidePrompt() => OnPlayerExitRange();
+
+    // Called when the item is successfully picked up
     public virtual void Pickup(Transform carrier)
     {
         IsPickedUp = true;
+        itemManager?.UnregisterItem(this);
 
         if (itemRigidbody != null)
         {
@@ -100,9 +118,11 @@ public abstract class ItemBase : MonoBehaviour
         }
         if (itemCollider != null) itemCollider.enabled = false;
 
-        // sync with multiplayer so it disappears for other players too
-        gameObject.SetActive(false); // just hide it
         OnPickedUp();
+
+        // sync with multiplayer so it disappears for other players too
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        foreach (Renderer r in renderers) r.enabled = false;
     }
 
     // Detaches the item from the carrier and drops it in the world.
@@ -111,7 +131,9 @@ public abstract class ItemBase : MonoBehaviour
         IsPickedUp = false;
 
         // sync with multiplayer so it reappears for other players too
-        gameObject.SetActive(true); // reappear
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        foreach (Renderer r in renderers) r.enabled = true;
+
         transform.position = dropPosition;
 
         if (itemCollider != null) itemCollider.enabled = true;

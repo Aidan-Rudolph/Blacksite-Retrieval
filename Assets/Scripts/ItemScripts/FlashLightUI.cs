@@ -2,8 +2,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Simple static UI handler for the flashlight battery display.
-// Attach this to a battery UI panel in your Canvas.
 
 public class FlashlightUI : MonoBehaviour
 {
@@ -18,7 +16,7 @@ public class FlashlightUI : MonoBehaviour
     private void Awake()
     {
         instance = this;
-        gameObject.SetActive(false); // hidden until flashlight is picked up
+        gameObject.SetActive(true); // hidden until flashlight is picked up
     }
 
     // Show or hide the battery UI.

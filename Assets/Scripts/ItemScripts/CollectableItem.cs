@@ -49,7 +49,7 @@ public class CollectibleItem : ItemBase
 
     protected override void OnDropped()
     {
-        // Nothing special needed for collectibles on drop
+        ItemPromptUI.Show($"Press E to pick up {itemName}  [{itemWeight}kg  ${itemValue}]");
     }
 
     public override void OnReturnedToBase()
