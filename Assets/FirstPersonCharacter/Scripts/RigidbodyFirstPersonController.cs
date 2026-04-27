@@ -84,12 +84,21 @@ namespace UnityStandardAssets.Characters.FirstPerson
             public float far = 5f;
         }
 
+        [Serializable]
+        public class FogCreepSettings {
+            public float start = 0.02f;
+            public float start_y = -15f;
+            public float end = 0.1f;
+            public float end_y = -25f;
+        }
+
 
         public Camera cam;
         public MovementSettings movementSettings = new MovementSettings();
         public MouseLook mouseLook = new MouseLook();
         public AdvancedSettings advancedSettings = new AdvancedSettings();
         public TerrainToolSettings terrainToolSettings = new TerrainToolSettings();
+        public FogCreepSettings fogCreepSettings = new FogCreepSettings();
 
 
         private Rigidbody m_RigidBody;
@@ -152,6 +161,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
                     dir*Time.deltaTime,
                     terrainToolSettings.far - terrainToolSettings.near
                 );
+            }
+
+            if (transform.position.y >= fogCreepSettings.start_y) RenderSettings.fogDensity = fogCreepSettings.start;
+            else if (transform.position.y <= fogCreepSettings.end_y) RenderSettings.fogDensity = fogCreepSettings.end;
+            else {
+                RenderSettings.fogDensity = (transform.position.y - fogCreepSettings.start_y)/(fogCreepSettings.end_y - fogCreepSettings.start_y) * (fogCreepSettings.end - fogCreepSettings.start) + fogCreepSettings.start;
             }
         }
 
