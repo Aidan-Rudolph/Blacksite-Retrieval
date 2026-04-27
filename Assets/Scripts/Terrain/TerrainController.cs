@@ -100,15 +100,18 @@ public class TerrainController : MonoBehaviour {
             }
         }
         int[,,] map = mgg.GetMap();
-        for (int y = 0; y < sizeY; y++) {
-            for (int z = 0; z < sizeZ; z++) {
-                for (int x = 0; x < sizeX; x++) {
+        RandomEntityGenerator.SetMap(map);
+        for (int i = 0; i < voxel.Length; ++i) voxel[i] = 10;
+        Vector3Int diff = new Vector3Int(((int)transform.localScale.x)-map.GetLength(0), ((int)transform.localScale.y)-map.GetLength(1), ((int)transform.localScale.z)-map.GetLength(2))/2;
+        for (int y = diff.y; y < map.GetLength(1)+diff.y; y++) {
+            for (int z = diff.z; z < map.GetLength(2)+diff.z; z++) {
+                for (int x = diff.x; x < map.GetLength(0)+diff.x; x++) {
                     int i = x + z * strideZ + y * strideY;
-                    int mx = Mathf.Clamp(x-5, 0, map.GetLength(0) - 1);
-                    int my = Mathf.Clamp(y-5, 0, map.GetLength(1) - 1);
-                    int mz = Mathf.Clamp(z-5, 0, map.GetLength(2) - 1);
+                    int mx = Mathf.Clamp(x, 0, map.GetLength(0) - 1);
+                    int my = Mathf.Clamp(y, 0, map.GetLength(1) - 1);
+                    int mz = Mathf.Clamp(z, 0, map.GetLength(2) - 1);
                     voxel[i] = (map[mx, my, mz] == 1 && y/sub < transform.localScale.y-transform.position.y) ? 10 : -10;
-                    if (map[mx, my, mz] == 0 && RandomEntityGenerator.CheckSpawn(new Vector3Int(mx, my, mz), new Vector3Int(map.GetLength(0), map.GetLength(1), map.GetLength(2)), map)) {
+                    if (map[mx, my, mz] == 0 && RandomEntityGenerator.CheckSpawn(new Vector3Int(mx, my, mz), new Vector3Int(map.GetLength(0), map.GetLength(1), map.GetLength(2)))) {
                         RandomEntityGenerator.SpawnEntity(new Vector3(x/sub, y/sub, z/sub) - transform.localScale/2 + transform.position);
                     }
                 }
