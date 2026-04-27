@@ -108,6 +108,9 @@ public class TerrainController : MonoBehaviour {
                     int my = Mathf.Clamp(y-5, 0, map.GetLength(1) - 1);
                     int mz = Mathf.Clamp(z-5, 0, map.GetLength(2) - 1);
                     voxel[i] = (map[mx, my, mz] == 1 && y/sub < transform.localScale.y-transform.position.y) ? 10 : -10;
+                    if (map[mx, my, mz] == 0 && RandomEntityGenerator.CheckSpawn(new Vector3Int(mx, my, mz), new Vector3Int(map.GetLength(0), map.GetLength(1), map.GetLength(2)), map)) {
+                        RandomEntityGenerator.SpawnEntity(new Vector3(x/sub, y/sub, z/sub) - transform.localScale/2 + transform.position);
+                    }
                 }
             }
         }
