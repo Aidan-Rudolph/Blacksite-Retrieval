@@ -7337,7 +7337,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c38af59dd4b32bd488d7d0094857ae01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  entities: []
+  entities:
+  - {fileID: 5819576243078079232, guid: 8fe299d43e8fea64b890d1eea5cc3004, type: 3}
+  - {fileID: 5555432806178740942, guid: 2de335081b719034596409eec04e3a0e, type: 3}
+  - {fileID: 1963501650170350439, guid: e21d5aa462a59744fa8b20e7aa65d78c, type: 3}
+  - {fileID: 1653144048072459704, guid: 83bdb63a4195ac14f8fc77c453b415fa, type: 3}
+  - {fileID: 8096676838593341424, guid: c2cd578d8e8b76a44b6523640727807f, type: 3}
+  - {fileID: 4463097085177740130, guid: b2eb5d369b7b49042b06dd70b0078415, type: 3}
+  - {fileID: 5939025285972074482, guid: 0a531b2d3c4096147bceb8342046e862, type: 3}
   maxSpawnBox: {x: 5, y: 5, z: 5}
   spawnChance: 100
 --- !u!82 &925372892
