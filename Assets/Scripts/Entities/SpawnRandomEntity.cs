@@ -11,7 +11,7 @@ public class RandomEntityGenerator : MonoBehaviour {
     private int[,,] map;
     private static RandomEntityGenerator spawner = null;
 
-    void Start() {
+    void Awake() {
         if (spawner != null) {
             Destroy(gameObject);
             return;
