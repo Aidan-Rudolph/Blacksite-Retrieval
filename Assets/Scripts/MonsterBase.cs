@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 // Base class for all monsters.
 // - Detects the player by proximity (enter range vs exit range are separate)
@@ -113,7 +113,7 @@ public abstract class MonsterBase : MonoBehaviour
             else
             {
                 // Rotation
-                RotateTowardPlayer();
+                
                 anim.SetFloat(AnimSpeed, moveSpeed);
                 anim.SetBool(AnimAttack, false);
             }
@@ -138,9 +138,11 @@ public abstract class MonsterBase : MonoBehaviour
 
         if (IsChasing && distToPlayer > attackRange)
         {
+            RotateTowardPlayer();
             Vector3 newPos = rb.position + transform.forward * moveSpeed * Time.fixedDeltaTime;
             rb.MovePosition(newPos);
         }
+        Debug.Log($"transform.forward: {transform.forward}");
     }
 
     // aggro / deaggro 
@@ -167,8 +169,8 @@ public abstract class MonsterBase : MonoBehaviour
         if (dir != Vector3.zero)
         {
             Quaternion targetRot = Quaternion.LookRotation(dir);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot,
-                                                   rotateSpeed * Time.deltaTime);
+            Quaternion newRot = Quaternion.Slerp(rb.rotation, targetRot, rotateSpeed * Time.deltaTime);
+            rb.MoveRotation(newRot);
         }
     }
 

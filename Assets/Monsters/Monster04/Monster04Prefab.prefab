@@ -1339,7 +1339,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   aggroRange: 10
   deaggroRange: 14
-  moveSpeed: 4
+  moveSpeed: 1.5
   rotateSpeed: 8
   attackRange: 1.5
   attackCooldown: 5
